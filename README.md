@@ -4,6 +4,14 @@ A modern, elegant, and user-friendly web-based database application designed to 
 
 Developed and branded by **Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17**.
 
+---
+
+## 🔑 Secure Access Gateway
+For security and privacy, the application begins with an authentication gate:
+* **User ID:** `BPDB`
+* **Password:** `Engineers`
+
+---
 
 ## 📊 Core Features
 
@@ -37,8 +45,14 @@ $$\text{PRL Date} = \text{Date of Birth} + 59\text{ years}$$
   * Tagged with a custom grey **Retired** badge.
 * **Chairman Service Extension (Exception):** The Chairman (Code: `1-0940`, DOB: `1967-06-07`) is granted a 1-year service extension from his actual PRL Date, keeping his status as "Extended Service" (Active operational status) on the dashboard and in the database until June 7, 2027.
 
-### 2. Delayed Promotion Thresholds (Active Only)
-Tracks promotion delays based on the total service years since their **1st Joining Date** in the organization (only calculated for active, non-retired engineers):
+### 2. SAE Promotee Engineers
+Identified by employee code starting with `11-`. Promotee engineers:
+* Are assigned a custom purple **Promoted from SAE** badge in the new **Engineer Status** table column.
+* Are excluded from all delayed promotion counts and statistics.
+* Are positioned at the absolute bottom of the database list regardless of the active sorting method (their group is appended below direct-entry engineers, preserving internal ordering criteria).
+
+### 3. Delayed Promotion Thresholds (Active Direct-Entry Only)
+Tracks promotion delays based on the total service years since their **1st Joining Date** in the organization:
 * **Assistant Engineer (AE) $\rightarrow$ Sub-Divisional Engineer (SDE):** Delayed if service exceeds **5 years**.
 * **Sub-Divisional Engineer (SDE) $\rightarrow$ Executive Engineer (XEN):** Delayed if service exceeds **10 years**.
 * **Executive Engineer (XEN) $\rightarrow$ Superintendent Engineer (SE):** Delayed if service exceeds **15 years**.

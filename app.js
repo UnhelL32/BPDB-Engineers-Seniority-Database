@@ -217,6 +217,11 @@ function calculateServiceYears(joiningStr, asOfDate) {
 function getPromotionDelay(eng, asOfDate) {
     if (!eng.joining) return { isDelayed: false, delayYears: 0 };
     
+    // Promotee engineers (starts with 11-) are NOT counted in the promotion delay count
+    if (eng.code && eng.code.startsWith('11-')) {
+        return { isDelayed: false, delayYears: 0 };
+    }
+    
     const serviceYears = calculateServiceYears(eng.joining, asOfDate);
     let limit = 0;
     let applies = false;
@@ -306,6 +311,7 @@ function renderDashboard() {
     let aeTotal = 0;
     let aeDelayed = 0;
     let retiredCount = 0;
+    let promoteeCount = 0;
     
     const designations = {};
     
@@ -319,6 +325,10 @@ function renderDashboard() {
         
         if (isRetired && eng.status.toLowerCase() === 'working') {
             retiredCount++;
+        }
+        
+        if (eng.code && eng.code.startsWith('11-') && eng.status.toLowerCase() === 'working') {
+            promoteeCount++;
         }
         
         // PRL upcoming metrics
@@ -358,6 +368,7 @@ function renderDashboard() {
     document.getElementById('statUpcomingPRL').innerText = upcomingPRLCount.toLocaleString();
     document.getElementById('statDelayedPromotions').innerText = delayedCount.toLocaleString();
     document.getElementById('statTotalRetired').innerText = retiredCount.toLocaleString();
+    document.getElementById('statTotalPromotees').innerText = promoteeCount.toLocaleString();
     
     // Update Assistant Engineers Stagnation Alert stats
     const aePercent = aeTotal > 0 ? (aeDelayed / aeTotal) * 100 : 0;
@@ -498,6 +509,9 @@ function viewDatabaseWithFilter(filterType) {
     } else if (filterType === 'retired') {
         selectPRL.value = 'retired';
         state.activeFilters.prl = 'retired';
+    } else if (filterType === 'promotee') {
+        document.getElementById('dbSearch').value = '11-';
+        state.activeFilters.search = '11-';
     }
     
     switchTab('database');
@@ -604,42 +618,43 @@ function naturalSortCompare(a, b) {
 
 // Sorts list elements
 function sortEngineers(list) {
-    if (state.activeFilters.sort === 'joining-asc') {
-        list.sort((a, b) => {
+    list.sort((a, b) => {
+        const aIsPromotee = a.code && a.code.startsWith('11-');
+        const bIsPromotee = b.code && b.code.startsWith('11-');
+        
+        if (aIsPromotee && !bIsPromotee) return 1;
+        if (!aIsPromotee && bIsPromotee) return -1;
+        
+        // If both are promotees or both are not, sort by selected sorting method
+        if (state.activeFilters.sort === 'joining-asc') {
             if (!a.joining) return 1;
             if (!b.joining) return -1;
             return new Date(a.joining) - new Date(b.joining);
-        });
-    } else if (state.activeFilters.sort === 'joining-desc') {
-        list.sort((a, b) => {
+        } else if (state.activeFilters.sort === 'joining-desc') {
             if (!a.joining) return 1;
             if (!b.joining) return -1;
             return new Date(b.joining) - new Date(a.joining);
-        });
-    } else {
-        const rankPriorityMap = {
-            'Chairman': 0,
-            'Member': 1,
-            'Chief Engineer': 2,
-            'Additional Chief Engineer': 3,
-            'Additional Chief Engineer (In Charge)': 4,
-            'Superintendent Engineer': 5,
-            'Executive Engineer & Assistant Chief Engineer': 6,
-            'Sub-Divisional Engineer': 7,
-            'Assistant Engineer': 8
-        };
-        
-        list.sort((a, b) => {
+        } else {
+            const rankPriorityMap = {
+                'Chairman': 0,
+                'Member': 1,
+                'Chief Engineer': 2,
+                'Additional Chief Engineer': 3,
+                'Additional Chief Engineer (In Charge)': 4,
+                'Superintendent Engineer': 5,
+                'Executive Engineer & Assistant Chief Engineer': 6,
+                'Sub-Divisional Engineer': 7,
+                'Assistant Engineer': 8
+            };
             const priorityA = rankPriorityMap[a.rank] !== undefined ? rankPriorityMap[a.rank] : 9;
             const priorityB = rankPriorityMap[b.rank] !== undefined ? rankPriorityMap[b.rank] : 9;
             
             if (priorityA !== priorityB) {
                 return priorityA - priorityB;
             }
-            
             return naturalSortCompare(a.code, b.code);
-        });
-    }
+        }
+    });
 }
 
 // Render filtered rows for the current page
@@ -654,7 +669,7 @@ function renderDatabaseTable() {
     if (totalRecords === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                <td colspan="10" style="text-align: center; padding: 48px; color: var(--text-muted);">
                     <i data-lucide="info" style="width: 24px; height: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
                     <p>No matching engineer records found.</p>
                 </td>
@@ -731,6 +746,10 @@ function renderDatabaseTable() {
             statusBadgeHtml = `<span class="status-pill status-active">Active</span>`;
         }
         
+        // Engineer Type status column
+        const isPromotee = eng.code && eng.code.startsWith('11-');
+        const engineerStatusHtml = isPromotee ? `<td><span class="status-pill status-promotee">Promoted from SAE</span></td>` : `<td>-</td>`;
+        
         tr.innerHTML = `
             <td><strong>${eng.code}</strong></td>
             <td>
@@ -738,6 +757,7 @@ function renderDatabaseTable() {
                 ${delayBadgeHtml}
             </td>
             <td>${statusBadgeHtml}</td>
+            ${engineerStatusHtml}
             <td>
                 <span class="rank-badge ${badgeClass}">${eng.rank}</span>
                 ${eng.originalDesignation && eng.originalDesignation !== eng.rank ? `<span class="detail-desig">${eng.originalDesignation}</span>` : ''}
