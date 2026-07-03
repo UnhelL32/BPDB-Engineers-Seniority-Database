@@ -1,6 +1,5 @@
 # BPDB-Engineers-Seniority-Database
 Seniority Database of BPDB Engineers Year 2026
-# BPDB Engineers Seniority Database App
 
 A modern, elegant, and user-friendly web-based database application designed to manage, search, and analyze the seniority records of engineers at the Bangladesh Power Development Board (BPDB).
 
