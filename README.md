@@ -4,14 +4,6 @@ A modern, elegant, and user-friendly web-based database application designed to 
 
 Developed and branded by **Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17**.
 
----
-
-## 🔑 Secure Access Gateway
-For security and privacy, the application begins with an authentication gate:
-* **User ID:** `BPDB`
-* **Password:** `Engineers`
-
----
 
 ## 📊 Core Features
 
