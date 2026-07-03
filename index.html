@@ -203,6 +203,30 @@
                                 <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
                             </div>
                         </div>
+
+                        <div class="stat-card glassmorphic-hover-card left-job-card" onclick="viewDatabaseWithFilter('left-job')">
+                            <div class="card-glow"></div>
+                            <div class="stat-icon orange">
+                                <i data-lucide="log-out"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="statTotalLeftJob">0</h3>
+                                <p>Left Job</p>
+                                <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glassmorphic-hover-card died-card" onclick="viewDatabaseWithFilter('died')">
+                            <div class="card-glow"></div>
+                            <div class="stat-icon red">
+                                <i data-lucide="skull"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="statTotalDied">0</h3>
+                                <p>Deceased (Died)</p>
+                                <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Assistant Engineers Delayed Promotion Stagnation Callout -->
@@ -460,6 +484,15 @@
                             <label for="engJoining">1st Joining Date in Org. *</label>
                             <input type="date" id="engJoining" required>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="engStatus">Employment / Service Status *</label>
+                        <select id="engStatus" required>
+                            <option value="Working">Working</option>
+                            <option value="Left Job">Left Job</option>
+                            <option value="Died">Died</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">

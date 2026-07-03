@@ -4,6 +4,14 @@ A modern, elegant, and user-friendly web-based database application designed to 
 
 Developed and branded by **Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17**.
 
+---
+
+## 🔑 Secure Access Gateway
+For security and privacy, the application begins with an authentication gate:
+* **User ID:** `BPDB`
+* **Password:** `Engineers`
+
+---
 
 ## 📊 Core Features
 
@@ -43,7 +51,13 @@ Identified by employee code starting with `11-`. Promotee engineers:
 * Are excluded from all delayed promotion counts and statistics.
 * Are positioned at the absolute bottom of the database list regardless of the active sorting method (their group is appended below direct-entry engineers, preserving internal ordering criteria).
 
-### 3. Delayed Promotion Thresholds (Active Direct-Entry Only)
+### 3. Left Job & Deceased (Died) Engineers
+Managers can update an engineer's service status in the Add/Edit form to **Left Job** or **Died**:
+* **Left Job:** Highlights them with an orange **Left Job** status pill badge. Excludes them from active status and promotion delay counts.
+* **Died:** Highlights them with a dark slate **Died** status pill badge. Excludes them from active status and promotion delay counts.
+* Both are tracked separately on the dashboard grid.
+
+### 4. Delayed Promotion Thresholds (Active Direct-Entry Only)
 Tracks promotion delays based on the total service years since their **1st Joining Date** in the organization:
 * **Assistant Engineer (AE) $\rightarrow$ Sub-Divisional Engineer (SDE):** Delayed if service exceeds **5 years**.
 * **Sub-Divisional Engineer (SDE) $\rightarrow$ Executive Engineer (XEN):** Delayed if service exceeds **10 years**.

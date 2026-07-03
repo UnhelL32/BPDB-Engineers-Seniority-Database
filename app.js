@@ -222,6 +222,11 @@ function getPromotionDelay(eng, asOfDate) {
         return { isDelayed: false, delayYears: 0 };
     }
     
+    // Left Job or Died are NOT counted in promotion delay count
+    if (eng.status && (eng.status.toLowerCase() === 'left job' || eng.status.toLowerCase() === 'died')) {
+        return { isDelayed: false, delayYears: 0 };
+    }
+    
     const serviceYears = calculateServiceYears(eng.joining, asOfDate);
     let limit = 0;
     let applies = false;
@@ -312,6 +317,8 @@ function renderDashboard() {
     let aeDelayed = 0;
     let retiredCount = 0;
     let promoteeCount = 0;
+    let leftCount = 0;
+    let diedCount = 0;
     
     const designations = {};
     
@@ -329,6 +336,14 @@ function renderDashboard() {
         
         if (eng.code && eng.code.startsWith('11-') && eng.status.toLowerCase() === 'working') {
             promoteeCount++;
+        }
+        
+        if (eng.status) {
+            if (eng.status.toLowerCase() === 'left job') {
+                leftCount++;
+            } else if (eng.status.toLowerCase() === 'died') {
+                diedCount++;
+            }
         }
         
         // PRL upcoming metrics
@@ -369,6 +384,8 @@ function renderDashboard() {
     document.getElementById('statDelayedPromotions').innerText = delayedCount.toLocaleString();
     document.getElementById('statTotalRetired').innerText = retiredCount.toLocaleString();
     document.getElementById('statTotalPromotees').innerText = promoteeCount.toLocaleString();
+    document.getElementById('statTotalLeftJob').innerText = leftCount.toLocaleString();
+    document.getElementById('statTotalDied').innerText = diedCount.toLocaleString();
     
     // Update Assistant Engineers Stagnation Alert stats
     const aePercent = aeTotal > 0 ? (aeDelayed / aeTotal) * 100 : 0;
@@ -512,6 +529,12 @@ function viewDatabaseWithFilter(filterType) {
     } else if (filterType === 'promotee') {
         document.getElementById('dbSearch').value = '11-';
         state.activeFilters.search = '11-';
+    } else if (filterType === 'left-job') {
+        document.getElementById('dbSearch').value = 'Left Job';
+        state.activeFilters.search = 'left job';
+    } else if (filterType === 'died') {
+        document.getElementById('dbSearch').value = 'Died';
+        state.activeFilters.search = 'died';
     }
     
     switchTab('database');
@@ -552,6 +575,7 @@ function applyFiltersAndRender() {
             eng.name.toLowerCase().includes(state.activeFilters.search) || 
             eng.code.toLowerCase().includes(state.activeFilters.search) || 
             eng.office.toLowerCase().includes(state.activeFilters.search) || 
+            (eng.status && eng.status.toLowerCase().includes(state.activeFilters.search)) || 
             (eng.originalDesignation && eng.originalDesignation.toLowerCase().includes(state.activeFilters.search));
             
         // 2. Rank Category Match
@@ -748,7 +772,14 @@ function renderDatabaseTable() {
         
         // Engineer Type status column
         const isPromotee = eng.code && eng.code.startsWith('11-');
-        const engineerStatusHtml = isPromotee ? `<td><span class="status-pill status-promotee">Promoted from SAE</span></td>` : `<td>-</td>`;
+        let engineerStatusHtml = '<td>-</td>';
+        if (eng.status && eng.status.toLowerCase() === 'left job') {
+            engineerStatusHtml = `<td><span class="status-pill status-left">Left Job</span></td>`;
+        } else if (eng.status && eng.status.toLowerCase() === 'died') {
+            engineerStatusHtml = `<td><span class="status-pill status-died-badge">Died</span></td>`;
+        } else if (isPromotee) {
+            engineerStatusHtml = `<td><span class="status-pill status-promotee">Promoted from SAE</span></td>`;
+        }
         
         tr.innerHTML = `
             <td><strong>${eng.code}</strong></td>
@@ -883,6 +914,7 @@ function openEditEngineerModal(code) {
     document.getElementById('engOriginalDesignation').value = eng.originalDesignation || '';
     document.getElementById('engDob').value = eng.dob || '';
     document.getElementById('engJoining').value = eng.joining || '';
+    document.getElementById('engStatus').value = eng.status || 'Working';
     
     document.getElementById('engineerModal').classList.remove('hidden');
     lucide.createIcons();
@@ -904,6 +936,7 @@ function saveEngineer(event) {
     const originalDesignation = document.getElementById('engOriginalDesignation').value.trim() || rank;
     const dob = document.getElementById('engDob').value;
     const joining = document.getElementById('engJoining').value;
+    const status = document.getElementById('engStatus').value;
     
     if (originalCode) {
         // Edit Action
@@ -916,7 +949,8 @@ function saveEngineer(event) {
                 rank,
                 originalDesignation,
                 dob,
-                joining
+                joining,
+                status
             };
         }
     } else {
@@ -936,7 +970,7 @@ function saveEngineer(event) {
             originalDesignation,
             dob,
             joining,
-            status: 'Working'
+            status
         });
     }
     
