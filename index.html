@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPDB Engineers Seniority Database App</title>
+    
+    <!-- Google Fonts: Outfit (For headings) and Inter (For clean body/data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons for premium visual indicators -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js for rendering beautiful, interactive promotion delay charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Premium Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <!-- 1. AUTHENTICATION VIEW -->
+    <div id="auth-view" class="auth-container">
+        <div class="auth-card glassmorphism-card">
+            <div class="auth-header">
+                <div class="bpdb-logo">
+                    <i data-lucide="shield-alert"></i>
+                </div>
+                <h1>BPDB Engineers</h1>
+                <h2>Seniority Database App</h2>
+                <p class="auth-subtitle">Secure Access Portal</p>
+            </div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="userId">User ID</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="user"></i>
+                        <input type="text" id="userId" placeholder="Enter User ID" required autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="lock"></i>
+                        <input type="password" id="password" placeholder="Enter Password" required autocomplete="current-password">
+                    </div>
+                </div>
+                
+                <div id="loginError" class="error-msg hidden">
+                    <i data-lucide="alert-circle"></i>
+                    <span>Invalid credentials. Please try again.</span>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Sign In</span>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p class="brand-text">System Developer</p>
+                <p class="developer-name">Md. Minhajul Haque</p>
+                <p class="developer-title">Sub Divisional Engineer, BPDB-17</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION CONTAINER (Hidden until authenticated) -->
+    <div id="app-container" class="app-layout hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glassmorphism-card">
+            <div class="sidebar-header">
+                <div class="bpdb-badge">BPDB</div>
+                <div class="app-branding">
+                    <h3>Seniority DB</h3>
+                    <span>Bangladesh Power Dev Board</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="database">
+                    <i data-lucide="database"></i>
+                    <span>Seniority List</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="current-user-card">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-info">
+                        <p class="username">BPDB Administrator</p>
+                        <span class="user-role">System User</span>
+                    </div>
+                </div>
+                
+                <!-- Explicit developer branding inside sidebar -->
+                <div class="developer-branding-sidebar">
+                    <div class="dev-header">
+                        <i data-lucide="code-2"></i>
+                        <span>System Developer</span>
+                    </div>
+                    <p class="dev-name">Md. Minhajul Haque</p>
+                    <p class="dev-post">Sub Divisional Engineer</p>
+                    <p class="dev-office">BPDB-17</p>
+                </div>
+                
+                <button class="btn btn-danger btn-block logout-btn" onclick="handleLogout()">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Panel -->
+        <main class="main-content">
+            <!-- Top App Header -->
+            <header class="content-header glassmorphism-card">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p class="current-date" id="currentDateDisplay">Friday, July 3, 2026</p>
+                </div>
+                <div class="header-right">
+                    <!-- Developer header stamp -->
+                    <div class="developer-badge">
+                        <i data-lucide="award"></i>
+                        <div class="badge-text">
+                            <span class="label">System Developer</span>
+                            <span class="value">Md. Minhajul Haque, SDE (BPDB-17)</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Content wrapper -->
+            <div class="page-content">
+                
+                <!-- VIEW 2.1: DASHBOARD TAB -->
+                <section class="tab-content active" id="tab-dashboard">
+                    <!-- Dashboard Statistics Cards Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card glassmorphic-hover-card active-engineers">
+                            <div class="card-glow"></div>
+                            <div class="stat-icon purple">
+                                <i data-lucide="users"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="statTotalActive">0</h3>
+                                <p>Total Active Engineers</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card glassmorphic-hover-card upcoming-prl-card" onclick="viewDatabaseWithFilter('prl')">
+                            <div class="card-glow"></div>
+                            <div class="stat-icon orange">
+                                <i data-lucide="hourglass"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="statUpcomingPRL">0</h3>
+                                <p>Upcoming PRL (Age 58)</p>
+                                <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card glassmorphic-hover-card delayed-promotion-card" onclick="viewDatabaseWithFilter('delayed')">
+                            <div class="card-glow"></div>
+                            <div class="stat-icon red">
+                                <i data-lucide="trending-down"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="statDelayedPromotions">0</h3>
+                                <p>Delayed Promotions</p>
+                                <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Grid: Charts and breakdowns -->
+                    <div class="dashboard-grid">
+                        <!-- Chart Card -->
+                        <div class="dashboard-card chart-card glassmorphism-card double-width">
+                            <div class="card-header">
+                                <div>
+                                    <h2>Delayed Promotion Distribution</h2>
+                                    <p>Analysis of average, minimum, maximum, and median promotion delays (in years) per rank</p>
+                                </div>
+                                <i data-lucide="bar-chart-3" class="header-icon"></i>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="promotionDelayChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Posting breakdown Card -->
+                        <div class="dashboard-card posting-card glassmorphism-card">
+                            <div class="card-header">
+                                <div>
+                                    <h2>Engineers by Posting</h2>
+                                    <p>Top offices with active postings</p>
+                                </div>
+                                <i data-lucide="map-pin" class="header-icon"></i>
+                            </div>
+                            <div class="card-body scrollable-card-body">
+                                <div id="postingList" class="posting-breakdown-list">
+                                    <!-- Dynamic elements inserted by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2.2: DATABASE VIEW TAB -->
+                <section class="tab-content" id="tab-database">
+                    <div class="database-layout">
+                        <!-- Filters panel -->
+                        <div class="filters-panel glassmorphism-card">
+                            <div class="search-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="dbSearch" placeholder="Search by Name, Employee Code, Office..." oninput="handleFilterChange()">
+                            </div>
+                            
+                            <div class="filters-grid">
+                                <div class="filter-group">
+                                    <label for="filterRank">Rank / Designation</label>
+                                    <select id="filterRank" onchange="handleFilterChange()">
+                                        <option value="all">All Ranks</option>
+                                        <option value="Chairman">Chairman</option>
+                                        <option value="Member">Member</option>
+                                        <option value="Chief Engineer">Chief Engineer</option>
+                                        <option value="Additional Chief Engineer">Additional Chief Engineer</option>
+                                        <option value="Additional Chief Engineer (In Charge)">Additional Chief Engineer (In Charge)</option>
+                                        <option value="Superintendent Engineer">Superintendent Engineer</option>
+                                        <option value="Executive Engineer & Assistant Chief Engineer">Executive Engineer & Assistant Chief Engineer</option>
+                                        <option value="Sub-Divisional Engineer">Sub-Divisional Engineer</option>
+                                        <option value="Assistant Engineer">Assistant Engineer</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label for="filterPRL">PRL Status</label>
+                                    <select id="filterPRL" onchange="handleFilterChange()">
+                                        <option value="all">All Statuses</option>
+                                        <option value="upcoming">Upcoming PRL (Age 58)</option>
+                                        <option value="retiring">Retiring this Year (Age 59)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label for="filterDelay">Promotion Status</label>
+                                    <select id="filterDelay" onchange="handleFilterChange()">
+                                        <option value="all">All Statuses</option>
+                                        <option value="delayed">Delayed Promotions Only</option>
+                                        <option value="on-time">On-time / Normal Only</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-group button-group">
+                                    <button class="btn btn-secondary btn-full" onclick="resetFilters()">
+                                        <i data-lucide="rotate-ccw"></i>
+                                        <span>Reset Filters</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Database Table Card -->
+                        <div class="database-card glassmorphism-card">
+                            <div class="table-actions-header">
+                                <div class="records-indicator">
+                                    <span class="active-dot"></span>
+                                    <span>Found <strong id="recordCount">0</strong> Engineers</span>
+                                </div>
+                                
+                                <button class="btn btn-primary" onclick="openAddEngineerModal()">
+                                    <i data-lucide="plus-circle"></i>
+                                    <span>Add New Engineer</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Table View -->
+                            <div class="table-container">
+                                <table class="seniority-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Engineer Name</th>
+                                            <th>Designation / Rank</th>
+                                            <th>Office Posting</th>
+                                            <th>Date of Birth (Age)</th>
+                                            <th>1st Joining (Service Years)</th>
+                                            <th>PRL Date</th>
+                                            <th class="actions-col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="databaseTableBody">
+                                        <!-- Dynamic rows generated by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pagination Controls -->
+                            <div class="pagination-footer">
+                                <div class="pagination-info">
+                                    Showing <span id="paginationRange">0-0</span> of <span id="paginationTotal">0</span> entries
+                                </div>
+                                <div class="pagination-controls" id="paginationControls">
+                                    <!-- Dynamic buttons generated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Sticky system developer footer -->
+            <footer class="app-footer glassmorphism-card">
+                <p>BPDB Engineers Seniority Database Application &copy; 2026. All rights reserved.</p>
+                <div class="developer-credit-tag">
+                    <span>Designed and Developed by:</span>
+                    <strong>Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17</strong>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- ================= MODALS & DIALOGS ================= -->
+
+    <!-- Engineer Add/Edit Modal -->
+    <div class="modal-backdrop hidden" id="engineerModal">
+        <div class="modal-card glassmorphism-card">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Engineer</h2>
+                <button class="btn-close" onclick="closeEngineerModal()">&times;</button>
+            </div>
+            <form id="engineerForm" onsubmit="saveEngineer(event)">
+                <input type="hidden" id="editOriginalCode">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="engCode">Employee Code *</label>
+                            <input type="text" id="engCode" required placeholder="e.g. 140042762" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="engName">Full Name *</label>
+                            <input type="text" id="engName" required placeholder="e.g. Md. Jakir Hossain" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="engOffice">Office Posting / Station *</label>
+                        <input type="text" id="engOffice" required placeholder="e.g. ESU, Lama or Computer Centre, Dhaka" autocomplete="off">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="engRank">Seniority Rank Designation *</label>
+                            <select id="engRank" required>
+                                <option value="Chairman">Chairman</option>
+                                <option value="Member">Member</option>
+                                <option value="Chief Engineer">Chief Engineer</option>
+                                <option value="Additional Chief Engineer">Additional Chief Engineer</option>
+                                <option value="Additional Chief Engineer (In Charge)">Additional Chief Engineer (In Charge)</option>
+                                <option value="Superintendent Engineer">Superintendent Engineer</option>
+                                <option value="Executive Engineer & Assistant Chief Engineer">Executive Engineer & Assistant Chief Engineer</option>
+                                <option value="Sub-Divisional Engineer">Sub-Divisional Engineer</option>
+                                <option value="Assistant Engineer">Assistant Engineer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="engOriginalDesignation">Detailed Designation (Text)</label>
+                            <input type="text" id="engOriginalDesignation" placeholder="e.g. Assistant Programmer or Sub-Divisional Engineer" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="engDob">Date of Birth *</label>
+                            <input type="date" id="engDob" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="engJoining">1st Joining Date in Org. *</label>
+                            <input type="date" id="engJoining" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEngineerModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitForm">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Imports -->
+    <script src="engineers-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
