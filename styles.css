@@ -1586,3 +1586,47 @@ h1, h2, h3, h4, h5, h6 {
     width: 10px;
     height: 10px;
 }
+
+/* Service Status Pill Badges */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-active {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+.status-extended {
+    background: rgba(249, 115, 22, 0.12);
+    border: 1px solid rgba(249, 115, 22, 0.3);
+    color: #fb923c;
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.15);
+}
+
+.status-retired {
+    background: rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #94a3b8;
+}
+
+/* Extended Row highlight styling */
+.seniority-table tr.extended-row td {
+    background: rgba(249, 115, 22, 0.025) !important;
+}
+
+/* SLA/Slate Metric Icon styling fallback */
+.stat-icon.gray {
+    background: rgba(148, 163, 184, 0.12) !important;
+    border: 1px solid rgba(148, 163, 184, 0.25) !important;
+    color: #94a3b8 !important;
+}

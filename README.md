@@ -35,14 +35,15 @@ For security and privacy, the application begins with an authentication gate:
 
 ## 📐 Scientific & System Rules Applied
 
-### 1. PRL (Post Retirement Leave) Date & Retirement
+### 1. PRL (Post Retirement Leave) Date & Retirement Status
 Calculated dynamically as:
 $$\text{PRL Date} = \text{Date of Birth} + 59\text{ years}$$
 * **Upcoming PRL:** Flagged when an engineer's current age is exactly **58 years** (in their last year of active service).
 * **Retired Status:** Triggered dynamically when age is **59 years or older**. Retired engineers are:
   * Excluded from active count cards and delayed promotion stats.
   * Highlighted in the database list with a strikethrough effect and dimmed rows.
-  * Tagged with a custom **Retired** badge.
+  * Tagged with a custom grey **Retired** badge.
+* **Chairman Service Extension (Exception):** The Chairman (Code: `1-0940`, DOB: `1967-06-07`) is granted a 1-year service extension from his actual PRL Date, keeping his status as "Extended Service" (Active operational status) on the dashboard and in the database until June 7, 2027.
 
 ### 2. Delayed Promotion Thresholds (Active Only)
 Tracks promotion delays based on the total service years since their **1st Joining Date** in the organization (only calculated for active, non-retired engineers):

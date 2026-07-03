@@ -155,6 +155,30 @@ function switchTab(tabId) {
 
 // --- Statistical & Scientific Calculations ---
 
+// Determine dynamic service status based on DOB, current date, and extensions
+function getServiceStatus(eng, asOfDate) {
+    if (!eng.dob) return 'Active';
+    const age = calculateAge(eng.dob, asOfDate);
+    
+    // Chairman Exception: 1 year extension from PRL Date (exceeding age 59 up to 60)
+    if (eng.code === '1-0940' || eng.rank === 'Chairman') {
+        const prlDate = new Date(calculatePRLDate(eng.dob));
+        const extendedDate = new Date(prlDate.getFullYear() + 1, prlDate.getMonth(), prlDate.getDate());
+        if (asOfDate >= prlDate && asOfDate < extendedDate) {
+            return 'Extended Service';
+        } else if (asOfDate >= extendedDate) {
+            return 'Retired';
+        }
+        return 'Active';
+    }
+    
+    if (age >= 59) {
+        return 'Retired';
+    }
+    
+    return 'Active';
+}
+
 // Get Age from DOB string
 function calculateAge(dobStr, asOfDate) {
     if (!dobStr) return null;
@@ -232,7 +256,8 @@ function calculateDelayStats() {
     };
     
     state.engineers.forEach(eng => {
-        const isRetired = eng.dob ? (calculateAge(eng.dob, CONFIG.CURRENT_DATE) >= 59) : false;
+        const serviceStatus = getServiceStatus(eng, CONFIG.CURRENT_DATE);
+        const isRetired = serviceStatus === 'Retired';
         if (!eng.joining || eng.status.toLowerCase() !== 'working' || isRetired) return;
         const delayInfo = getPromotionDelay(eng, CONFIG.CURRENT_DATE);
         if (delayInfo.isDelayed && delayBuckets[eng.rank]) {
@@ -286,7 +311,8 @@ function renderDashboard() {
     
     state.engineers.forEach(eng => {
         // Calculate dynamic retired status (age >= 59)
-        const isRetired = eng.dob ? (calculateAge(eng.dob, CONFIG.CURRENT_DATE) >= 59) : false;
+        const serviceStatus = getServiceStatus(eng, CONFIG.CURRENT_DATE);
+        const isRetired = serviceStatus === 'Retired';
         const isWorking = eng.status.toLowerCase() === 'working' && !isRetired;
         
         if (isWorking) activeCount++;
@@ -520,11 +546,14 @@ function applyFiltersAndRender() {
         // 3. PRL Retirement Match
         let matchPRL = true;
         if (state.activeFilters.prl !== 'all' && eng.dob) {
+            const serviceStatus = getServiceStatus(eng, CONFIG.CURRENT_DATE);
             const age = calculateAge(eng.dob, CONFIG.CURRENT_DATE);
             if (state.activeFilters.prl === 'upcoming') {
                 matchPRL = (age === 58);
             } else if (state.activeFilters.prl === 'retired') {
-                matchPRL = (age >= 59);
+                matchPRL = (serviceStatus === 'Retired');
+            } else if (state.activeFilters.prl === 'extended') {
+                matchPRL = (serviceStatus === 'Extended Service');
             }
         } else if (state.activeFilters.prl !== 'all') {
             matchPRL = false;
@@ -625,7 +654,7 @@ function renderDatabaseTable() {
     if (totalRecords === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                <td colspan="9" style="text-align: center; padding: 48px; color: var(--text-muted);">
                     <i data-lucide="info" style="width: 24px; height: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
                     <p>No matching engineer records found.</p>
                 </td>
@@ -645,10 +674,15 @@ function renderDatabaseTable() {
     const pageRecords = state.filteredEngineers.slice(startIndex, endIndex);
     
     pageRecords.forEach(eng => {
-        const isRetired = eng.dob ? (calculateAge(eng.dob, CONFIG.CURRENT_DATE) >= 59) : false;
+        const serviceStatus = getServiceStatus(eng, CONFIG.CURRENT_DATE);
+        const isRetired = serviceStatus === 'Retired';
+        const isExtended = serviceStatus === 'Extended Service';
+        
         const tr = document.createElement('tr');
         if (isRetired) {
             tr.className = 'retired-row';
+        } else if (isExtended) {
+            tr.className = 'extended-row';
         }
         
         // Age Calculation
@@ -687,12 +721,23 @@ function renderDatabaseTable() {
         // Generate designation badge class mapping
         const badgeClass = getRankBadgeClass(eng.rank);
         
+        // Status badge HTML
+        let statusBadgeHtml = '';
+        if (isRetired) {
+            statusBadgeHtml = `<span class="status-pill status-retired">Retired</span>`;
+        } else if (isExtended) {
+            statusBadgeHtml = `<span class="status-pill status-extended">Extended</span>`;
+        } else {
+            statusBadgeHtml = `<span class="status-pill status-active">Active</span>`;
+        }
+        
         tr.innerHTML = `
             <td><strong>${eng.code}</strong></td>
             <td>
                 <div style="font-weight: 500;">${eng.name}</div>
                 ${delayBadgeHtml}
             </td>
+            <td>${statusBadgeHtml}</td>
             <td>
                 <span class="rank-badge ${badgeClass}">${eng.rank}</span>
                 ${eng.originalDesignation && eng.originalDesignation !== eng.rank ? `<span class="detail-desig">${eng.originalDesignation}</span>` : ''}
