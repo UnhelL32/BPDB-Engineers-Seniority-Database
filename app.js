@@ -21,7 +21,8 @@ let state = {
         search: '',
         rank: 'all',
         prl: 'all',
-        delay: 'all'
+        delay: 'all',
+        sort: 'default'
     }
 };
 
@@ -275,7 +276,11 @@ function renderDashboard() {
     let upcomingPRLCount = 0;
     let delayedCount = 0;
     
-    const postings = {};
+    // AE delayed promotion stats
+    let aeTotal = 0;
+    let aeDelayed = 0;
+    
+    const designations = {};
     
     state.engineers.forEach(eng => {
         const isWorking = eng.status.toLowerCase() === 'working';
@@ -290,16 +295,26 @@ function renderDashboard() {
         }
         
         // Promotion delays metrics
+        let isDelayed = false;
         if (isWorking) {
             const delayInfo = getPromotionDelay(eng, CONFIG.CURRENT_DATE);
             if (delayInfo.isDelayed) {
                 delayedCount++;
+                isDelayed = true;
             }
         }
         
-        // Office posting aggregates
-        if (eng.office && isWorking) {
-            postings[eng.office] = (postings[eng.office] || 0) + 1;
+        // Rank designation aggregates
+        if (eng.rank && isWorking) {
+            designations[eng.rank] = (designations[eng.rank] || 0) + 1;
+            
+            // Assistant Engineer statistics
+            if (eng.rank === 'Assistant Engineer') {
+                aeTotal++;
+                if (isDelayed) {
+                    aeDelayed++;
+                }
+            }
         }
     });
     
@@ -308,22 +323,34 @@ function renderDashboard() {
     document.getElementById('statUpcomingPRL').innerText = upcomingPRLCount.toLocaleString();
     document.getElementById('statDelayedPromotions').innerText = delayedCount.toLocaleString();
     
-    // 2. Render Posting Breakdown list (top 10 postings)
-    const sortedPostings = Object.entries(postings)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-        
-    const postingList = document.getElementById('postingList');
-    postingList.innerHTML = '';
+    // Update Assistant Engineers Stagnation Alert stats
+    const aePercent = aeTotal > 0 ? (aeDelayed / aeTotal) * 100 : 0;
+    document.getElementById('aeTotalCount').innerText = aeTotal.toLocaleString();
+    document.getElementById('aeDelayedCount').innerText = aeDelayed.toLocaleString();
+    document.getElementById('aeDelayedPercent').innerText = `${aePercent.toFixed(1)}%`;
+    document.getElementById('aeDelayedPercentText').innerText = `${aePercent.toFixed(0)}%`;
     
-    sortedPostings.forEach(([office, count]) => {
+    // 2. Render Designation Breakdown list (hierarchical ranks)
+    const rankOrder = [
+        'Chairman', 'Member', 'Chief Engineer', 'Additional Chief Engineer',
+        'Additional Chief Engineer (In Charge)', 'Superintendent Engineer',
+        'Executive Engineer & Assistant Chief Engineer', 'Sub-Divisional Engineer',
+        'Assistant Engineer'
+    ];
+        
+    const designationList = document.getElementById('designationList');
+    designationList.innerHTML = '';
+    
+    rankOrder.forEach(rank => {
+        const count = designations[rank] || 0;
+        const badgeClass = getRankBadgeClass(rank);
         const item = document.createElement('div');
         item.className = 'posting-item';
         item.innerHTML = `
-            <span class="posting-name" title="${office}">${office}</span>
+            <span class="rank-badge ${badgeClass}" style="font-size: 11px;">${rank}</span>
             <span class="posting-count">${count}</span>
         `;
-        postingList.appendChild(item);
+        designationList.appendChild(item);
     });
     
     // 3. Render Promotion Delay chart using Chart.js
@@ -445,6 +472,7 @@ function handleFilterChange() {
     state.activeFilters.rank = document.getElementById('filterRank').value;
     state.activeFilters.prl = document.getElementById('filterPRL').value;
     state.activeFilters.delay = document.getElementById('filterDelay').value;
+    state.activeFilters.sort = document.getElementById('filterSort').value;
     
     state.currentPage = 1;
     applyFiltersAndRender();
@@ -456,8 +484,9 @@ function resetFilters() {
     document.getElementById('filterRank').value = 'all';
     document.getElementById('filterPRL').value = 'all';
     document.getElementById('filterDelay').value = 'all';
+    document.getElementById('filterSort').value = 'default';
     
-    state.activeFilters = { search: '', rank: 'all', prl: 'all', delay: 'all' };
+    state.activeFilters = { search: '', rank: 'all', prl: 'all', delay: 'all', sort: 'default' };
     state.currentPage = 1;
     applyFiltersAndRender();
 }
@@ -533,28 +562,42 @@ function naturalSortCompare(a, b) {
 
 // Sorts list elements
 function sortEngineers(list) {
-    const rankPriorityMap = {
-        'Chairman': 0,
-        'Member': 1,
-        'Chief Engineer': 2,
-        'Additional Chief Engineer': 3,
-        'Additional Chief Engineer (In Charge)': 4,
-        'Superintendent Engineer': 5,
-        'Executive Engineer & Assistant Chief Engineer': 6,
-        'Sub-Divisional Engineer': 7,
-        'Assistant Engineer': 8
-    };
-    
-    list.sort((a, b) => {
-        const priorityA = rankPriorityMap[a.rank] !== undefined ? rankPriorityMap[a.rank] : 9;
-        const priorityB = rankPriorityMap[b.rank] !== undefined ? rankPriorityMap[b.rank] : 9;
+    if (state.activeFilters.sort === 'joining-asc') {
+        list.sort((a, b) => {
+            if (!a.joining) return 1;
+            if (!b.joining) return -1;
+            return new Date(a.joining) - new Date(b.joining);
+        });
+    } else if (state.activeFilters.sort === 'joining-desc') {
+        list.sort((a, b) => {
+            if (!a.joining) return 1;
+            if (!b.joining) return -1;
+            return new Date(b.joining) - new Date(a.joining);
+        });
+    } else {
+        const rankPriorityMap = {
+            'Chairman': 0,
+            'Member': 1,
+            'Chief Engineer': 2,
+            'Additional Chief Engineer': 3,
+            'Additional Chief Engineer (In Charge)': 4,
+            'Superintendent Engineer': 5,
+            'Executive Engineer & Assistant Chief Engineer': 6,
+            'Sub-Divisional Engineer': 7,
+            'Assistant Engineer': 8
+        };
         
-        if (priorityA !== priorityB) {
-            return priorityA - priorityB;
-        }
-        
-        return naturalSortCompare(a.code, b.code);
-    });
+        list.sort((a, b) => {
+            const priorityA = rankPriorityMap[a.rank] !== undefined ? rankPriorityMap[a.rank] : 9;
+            const priorityB = rankPriorityMap[b.rank] !== undefined ? rankPriorityMap[b.rank] : 9;
+            
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+            
+            return naturalSortCompare(a.code, b.code);
+        });
+    }
 }
 
 // Render filtered rows for the current page

@@ -181,6 +181,41 @@
                         </div>
                     </div>
 
+                    <!-- Assistant Engineers Delayed Promotion Stagnation Callout -->
+                    <div class="dashboard-card ae-alert-card glassmorphism-card">
+                        <div class="ae-alert-content">
+                            <div class="ae-alert-header">
+                                <div class="alert-icon-ring alert-pulse">
+                                    <i data-lucide="alert-triangle"></i>
+                                </div>
+                                <div class="alert-title-wrap">
+                                    <h2>Assistant Engineers Promotion Stagnation Warning</h2>
+                                    <p class="critical-text text-danger">High-Priority Career Retention Alert</p>
+                                </div>
+                            </div>
+                            <div class="ae-alert-body">
+                                <div class="ae-stats-highlight">
+                                    <div class="ae-stat-item">
+                                        <span class="value" id="aeTotalCount">0</span>
+                                        <span class="label">Total Assistant Engineers</span>
+                                    </div>
+                                    <div class="ae-stat-item highlight-red">
+                                        <span class="value" id="aeDelayedCount">0</span>
+                                        <span class="label">Delayed Promotion (> 5 Yrs)</span>
+                                    </div>
+                                    <div class="ae-stat-item highlight-orange">
+                                        <span class="value" id="aeDelayedPercent">0%</span>
+                                        <span class="label">Stagnation Percentage</span>
+                                    </div>
+                                </div>
+                                <div class="ae-alert-description-text">
+                                    <i data-lucide="info" class="info-icon text-warning"></i>
+                                    <span><strong>Critical HR Insight:</strong> Over <strong id="aeDelayedPercentText">0%</strong> of Assistant Engineers have exceeded their 5-year promotion limit. This high stagnation rate is directly linked to career demotivation and a significantly higher percentage of junior engineers leaving BPDB. Urgent policy intervention is recommended.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Dashboard Grid: Charts and breakdowns -->
                     <div class="dashboard-grid">
                         <!-- Chart Card -->
@@ -199,17 +234,17 @@
                             </div>
                         </div>
 
-                        <!-- Posting breakdown Card -->
-                        <div class="dashboard-card posting-card glassmorphism-card">
+                        <!-- Designation breakdown Card -->
+                        <div class="dashboard-card designation-card glassmorphism-card">
                             <div class="card-header">
                                 <div>
-                                    <h2>Engineers by Posting</h2>
-                                    <p>Top offices with active postings</p>
+                                    <h2>Engineers by Designation</h2>
+                                    <p>Active engineers by rank tier</p>
                                 </div>
-                                <i data-lucide="map-pin" class="header-icon"></i>
+                                <i data-lucide="award" class="header-icon"></i>
                             </div>
                             <div class="card-body scrollable-card-body">
-                                <div id="postingList" class="posting-breakdown-list">
+                                <div id="designationList" class="posting-breakdown-list">
                                     <!-- Dynamic elements inserted by JS -->
                                 </div>
                             </div>
@@ -259,6 +294,15 @@
                                         <option value="all">All Statuses</option>
                                         <option value="delayed">Delayed Promotions Only</option>
                                         <option value="on-time">On-time / Normal Only</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label for="filterSort">Sort By</label>
+                                    <select id="filterSort" onchange="handleFilterChange()">
+                                        <option value="default">Default (Rank & ID)</option>
+                                        <option value="joining-asc">Joining Date (Senior to Junior)</option>
+                                        <option value="joining-desc">Joining Date (Junior to Senior)</option>
                                     </select>
                                 </div>
 

@@ -1,10 +1,15 @@
-# BPDB-Engineers-Seniority-Database
-Seniority Database of BPDB Engineers Year 2026
+# BPDB Engineers Seniority Database App
 
 A modern, elegant, and user-friendly web-based database application designed to manage, search, and analyze the seniority records of engineers at the Bangladesh Power Development Board (BPDB).
 
 Developed and branded by **Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17**.
 
+---
+
+## 🔑 Secure Access Gateway
+For security and privacy, the application begins with an authentication gate:
+* **User ID:** `BPDB`
+* **Password:** `Engineers`
 
 ---
 
@@ -12,13 +17,14 @@ Developed and branded by **Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17*
 
 ### 1. Interactive Analytics Dashboard
 * **Metrics Summary Panel:** Displays total active engineers, upcoming PRL engineers (Age 58), and total delayed promotions. Metrics cards act as shortcuts to pre-filtered lists in the database.
-* **Top Postings Widget:** Renders a list of the top 10 offices/stations by engineer count.
+* **Assistant Engineers Stagnation Alert:** A high-priority alert highlight illustrating the count of Assistant Engineers, delayed promotions, and the stagnation percentage. It contextualizes how delay rates correlate directly with demotivation and junior engineers leaving BPDB.
+* **Engineers by Designation Widget:** Hierarchical rank list indicating the number of active engineers in each of the 9 ranks.
 * **Promotion Delay Chart:** An interactive grouped bar chart displaying the **Minimum**, **Maximum**, **Average (Mean)**, and **Median** delay (in years) across engineering tiers.
 
 ### 2. Seniority Database List
 * **Seniority Sort Chain:** Pre-sorted hierarchically where the highest tier is at the top and Assistant Engineers are at the bottom:
   $$\text{Chairman} \succ \text{Member} \succ \text{Chief Engineer} \succ \text{Additional Chief Engineer} \succ \text{Additional Chief (In Charge)} \succ \text{Superintendent} \succ \text{XEN \& Assistant Chief} \succ \text{SDE} \succ \text{Assistant Engineer}$$
-* **ID Serial Sorting:** Within each rank, engineers are naturally sorted by their Employee Code.
+* **Multiple Sort Options:** Supports sorting naturally by Rank + ID serial, or by Organizational Joining Date (Senior to Junior or Junior to Senior) to obtain the actual seniority order.
 * **Color-Coded Badges:** Distinct colors for all 9 tiers for instant visual recognition.
 * **Smart Search & Filters:**
   * Real-time search across Name, ID Code, Office, and original designation.
@@ -45,4 +51,18 @@ Tracks promotion delays based on the total service years since their **1st Joini
 
 ---
 
+## 🛠️ How to Run Locally
 
+Since the application runs entirely in the browser using HTML5, Vanilla CSS, and JavaScript, it does not require complex installations:
+
+1. Clone or download the files:
+   * `index.html` (Application structure)
+   * `styles.css` (Glassmorphism layout)
+   * `app.js` (Calculation & logic script)
+   * `engineers-data.js` (Compiled database of 1,231 records)
+2. Run a simple local server in the folder:
+   ```bash
+   python -m http.server 8000
+   ```
+3. Open your web browser and go to:
+   [http://localhost:8000](http://localhost:8000)
