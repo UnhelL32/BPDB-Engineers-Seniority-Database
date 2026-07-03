@@ -179,6 +179,18 @@
                                 <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
                             </div>
                         </div>
+
+                        <div class="stat-card glassmorphic-hover-card retired-engineers-card" onclick="viewDatabaseWithFilter('retired')">
+                            <div class="card-glow"></div>
+                            <div class="stat-icon gray">
+                                <i data-lucide="shield-off"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="statTotalRetired">0</h3>
+                                <p>Retired Engineers</p>
+                                <span class="card-link">View Database <i data-lucide="arrow-right"></i></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Assistant Engineers Delayed Promotion Stagnation Callout -->
@@ -284,7 +296,7 @@
                                     <select id="filterPRL" onchange="handleFilterChange()">
                                         <option value="all">All Statuses</option>
                                         <option value="upcoming">Upcoming PRL (Age 58)</option>
-                                        <option value="retiring">Retiring this Year (Age 59)</option>
+                                        <option value="retired">Retired (Age 59+)</option>
                                     </select>
                                 </div>
                                 

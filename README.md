@@ -16,10 +16,10 @@ For security and privacy, the application begins with an authentication gate:
 ## 📊 Core Features
 
 ### 1. Interactive Analytics Dashboard
-* **Metrics Summary Panel:** Displays total active engineers, upcoming PRL engineers (Age 58), and total delayed promotions. Metrics cards act as shortcuts to pre-filtered lists in the database.
+* **Metrics Summary Panel:** Displays total active engineers, upcoming PRL (Age 58) list, total delayed promotions (active only), and retired engineers (Age 59+) separately. Cards act as shortcuts to pre-filtered lists in the database.
 * **Assistant Engineers Stagnation Alert:** A high-priority alert highlight illustrating the count of Assistant Engineers, delayed promotions, and the stagnation percentage. It contextualizes how delay rates correlate directly with demotivation and junior engineers leaving BPDB.
 * **Engineers by Designation Widget:** Hierarchical rank list indicating the number of active engineers in each of the 9 ranks.
-* **Promotion Delay Chart:** An interactive grouped bar chart displaying the **Minimum**, **Maximum**, **Average (Mean)**, and **Median** delay (in years) across engineering tiers.
+* **Promotion Delay Chart:** An interactive grouped bar chart displaying the **Minimum**, **Maximum**, **Average (Mean)**, and **Median** delay (in years) across active engineering tiers (retired engineers are excluded to preserve chart utility).
 
 ### 2. Seniority Database List
 * **Seniority Sort Chain:** Pre-sorted hierarchically where the highest tier is at the top and Assistant Engineers are at the bottom:
@@ -35,14 +35,17 @@ For security and privacy, the application begins with an authentication gate:
 
 ## 📐 Scientific & System Rules Applied
 
-### 1. PRL (Post Retirement Leave) Date
+### 1. PRL (Post Retirement Leave) Date & Retirement
 Calculated dynamically as:
 $$\text{PRL Date} = \text{Date of Birth} + 59\text{ years}$$
 * **Upcoming PRL:** Flagged when an engineer's current age is exactly **58 years** (in their last year of active service).
-* **Retiring/Retired:** Flagged when age is **59 years or older**.
+* **Retired Status:** Triggered dynamically when age is **59 years or older**. Retired engineers are:
+  * Excluded from active count cards and delayed promotion stats.
+  * Highlighted in the database list with a strikethrough effect and dimmed rows.
+  * Tagged with a custom **Retired** badge.
 
-### 2. Delayed Promotion Thresholds
-Tracks promotion delays based on the total service years since their **1st Joining Date** in the organization:
+### 2. Delayed Promotion Thresholds (Active Only)
+Tracks promotion delays based on the total service years since their **1st Joining Date** in the organization (only calculated for active, non-retired engineers):
 * **Assistant Engineer (AE) $\rightarrow$ Sub-Divisional Engineer (SDE):** Delayed if service exceeds **5 years**.
 * **Sub-Divisional Engineer (SDE) $\rightarrow$ Executive Engineer (XEN):** Delayed if service exceeds **10 years**.
 * **Executive Engineer (XEN) $\rightarrow$ Superintendent Engineer (SE):** Delayed if service exceeds **15 years**.

@@ -232,7 +232,8 @@ function calculateDelayStats() {
     };
     
     state.engineers.forEach(eng => {
-        if (!eng.joining || eng.status.toLowerCase() !== 'working') return;
+        const isRetired = eng.dob ? (calculateAge(eng.dob, CONFIG.CURRENT_DATE) >= 59) : false;
+        if (!eng.joining || eng.status.toLowerCase() !== 'working' || isRetired) return;
         const delayInfo = getPromotionDelay(eng, CONFIG.CURRENT_DATE);
         if (delayInfo.isDelayed && delayBuckets[eng.rank]) {
             delayBuckets[eng.rank].push(delayInfo.delayYears);
@@ -279,12 +280,20 @@ function renderDashboard() {
     // AE delayed promotion stats
     let aeTotal = 0;
     let aeDelayed = 0;
+    let retiredCount = 0;
     
     const designations = {};
     
     state.engineers.forEach(eng => {
-        const isWorking = eng.status.toLowerCase() === 'working';
+        // Calculate dynamic retired status (age >= 59)
+        const isRetired = eng.dob ? (calculateAge(eng.dob, CONFIG.CURRENT_DATE) >= 59) : false;
+        const isWorking = eng.status.toLowerCase() === 'working' && !isRetired;
+        
         if (isWorking) activeCount++;
+        
+        if (isRetired && eng.status.toLowerCase() === 'working') {
+            retiredCount++;
+        }
         
         // PRL upcoming metrics
         if (eng.dob && isWorking) {
@@ -322,6 +331,7 @@ function renderDashboard() {
     document.getElementById('statTotalActive').innerText = activeCount.toLocaleString();
     document.getElementById('statUpcomingPRL').innerText = upcomingPRLCount.toLocaleString();
     document.getElementById('statDelayedPromotions').innerText = delayedCount.toLocaleString();
+    document.getElementById('statTotalRetired').innerText = retiredCount.toLocaleString();
     
     // Update Assistant Engineers Stagnation Alert stats
     const aePercent = aeTotal > 0 ? (aeDelayed / aeTotal) * 100 : 0;
@@ -459,6 +469,9 @@ function viewDatabaseWithFilter(filterType) {
     } else if (filterType === 'delayed') {
         selectDelay.value = 'delayed';
         state.activeFilters.delay = 'delayed';
+    } else if (filterType === 'retired') {
+        selectPRL.value = 'retired';
+        state.activeFilters.prl = 'retired';
     }
     
     switchTab('database');
@@ -510,7 +523,7 @@ function applyFiltersAndRender() {
             const age = calculateAge(eng.dob, CONFIG.CURRENT_DATE);
             if (state.activeFilters.prl === 'upcoming') {
                 matchPRL = (age === 58);
-            } else if (state.activeFilters.prl === 'retiring') {
+            } else if (state.activeFilters.prl === 'retired') {
                 matchPRL = (age >= 59);
             }
         } else if (state.activeFilters.prl !== 'all') {
@@ -632,7 +645,11 @@ function renderDatabaseTable() {
     const pageRecords = state.filteredEngineers.slice(startIndex, endIndex);
     
     pageRecords.forEach(eng => {
+        const isRetired = eng.dob ? (calculateAge(eng.dob, CONFIG.CURRENT_DATE) >= 59) : false;
         const tr = document.createElement('tr');
+        if (isRetired) {
+            tr.className = 'retired-row';
+        }
         
         // Age Calculation
         const age = eng.dob ? calculateAge(eng.dob, CONFIG.CURRENT_DATE) : null;
@@ -648,10 +665,17 @@ function renderDatabaseTable() {
         const prlDate = eng.dob ? calculatePRLDate(eng.dob) : 'N/A';
         const prlFormatted = prlDate !== 'N/A' ? formatSlashDate(prlDate) : 'N/A';
         
-        // Promotion Delay indicators
+        // Promotion Delay indicators or Retired Badge
         const delayInfo = getPromotionDelay(eng, CONFIG.CURRENT_DATE);
         let delayBadgeHtml = '';
-        if (delayInfo.isDelayed) {
+        if (isRetired) {
+            delayBadgeHtml = `
+                <div class="retired-badge" title="Retired (PRL Exceeded)">
+                    <i data-lucide="shield-off"></i>
+                    <span>Retired</span>
+                </div>
+            `;
+        } else if (delayInfo.isDelayed) {
             delayBadgeHtml = `
                 <div class="delay-badge" title="Promotion delayed by ${delayInfo.delayYears.toFixed(1)} years">
                     <i data-lucide="alert-triangle"></i>
