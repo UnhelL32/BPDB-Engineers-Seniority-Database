@@ -59,8 +59,10 @@ function checkAuthSession() {
         // Dynamic access permissions setup
         updatePermissionsUI();
         
+        // Reset active view to dashboard tab to sync tab content and sidebar selection
+        switchTab('dashboard');
+        
         lucide.createIcons();
-        renderDashboard();
     } else {
         authView.classList.remove('hidden');
         appContainer.classList.add('hidden');
@@ -89,8 +91,8 @@ function handleLogin(event) {
     const passwordInput = document.getElementById('password').value;
     const errorMsg = document.getElementById('loginError');
     
-    // Accept user code/id check
-    const isUserValid = (userIdInput === CONFIG.AUTH_USER || userIdInput === '1091514' || userIdInput === 'Minhaj');
+    // Accept user code/id check (case-insensitive)
+    const isUserValid = (userIdInput.toUpperCase() === CONFIG.AUTH_USER.toUpperCase() || userIdInput === '1091514' || userIdInput.toLowerCase() === 'minhaj');
     
     if (isUserValid && passwordInput === CONFIG.AUTH_PASS_ADMIN) {
         // Admin role login (Md. Minhajul Haque)
@@ -101,7 +103,7 @@ function handleLogin(event) {
         document.getElementById('userId').value = '';
         document.getElementById('password').value = '';
         checkAuthSession();
-    } else if (userIdInput === CONFIG.AUTH_USER && passwordInput === CONFIG.AUTH_PASS_VIEWER) {
+    } else if (userIdInput.toUpperCase() === CONFIG.AUTH_USER.toUpperCase() && passwordInput === CONFIG.AUTH_PASS_VIEWER) {
         // Viewer role login
         sessionStorage.setItem('bpdb_auth', 'true');
         sessionStorage.setItem('bpdb_user_role', 'viewer');
