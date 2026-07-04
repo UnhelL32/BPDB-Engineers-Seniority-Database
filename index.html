@@ -372,7 +372,7 @@
                                     <span>Found <strong id="recordCount">0</strong> Engineers</span>
                                 </div>
                                 
-                                <button class="btn btn-primary" onclick="openAddEngineerModal()">
+                                <button class="btn btn-primary" id="addEngineerBtn" onclick="openAddEngineerModal()">
                                     <i data-lucide="plus-circle"></i>
                                     <span>Add New Engineer</span>
                                 </button>
@@ -392,7 +392,7 @@
                                             <th>Date of Birth (Age)</th>
                                             <th>1st Joining (Service Years)</th>
                                             <th>PRL Date</th>
-                                            <th class="actions-col">Actions</th>
+                                            <th class="actions-col" id="actionsHeader">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="databaseTableBody">

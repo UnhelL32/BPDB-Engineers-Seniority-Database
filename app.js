@@ -7,13 +7,15 @@ const CONFIG = {
     CURRENT_DATE: new Date('2026-07-03'), // Fixed current date as per system metadata
     ITEMS_PER_PAGE: 50,
     AUTH_USER: 'BPDB',
-    AUTH_PASS: 'Engineers'
+    AUTH_PASS_VIEWER: 'Engineers',
+    AUTH_PASS_ADMIN: '1091514m@H'
 };
 
 let state = {
     engineers: [],
     filteredEngineers: [],
     currentPage: 1,
+    userRole: 'viewer', // 'viewer' or 'admin'
     charts: {
         delayChart: null
     },
@@ -44,18 +46,39 @@ document.addEventListener('DOMContentLoaded', () => {
 // Check if user is logged in
 function checkAuthSession() {
     const isAuthenticated = sessionStorage.getItem('bpdb_auth') === 'true';
+    const userRole = sessionStorage.getItem('bpdb_user_role') || 'viewer';
+    state.userRole = userRole;
+    
     const authView = document.getElementById('auth-view');
     const appContainer = document.getElementById('app-container');
     
     if (isAuthenticated) {
         authView.classList.add('hidden');
         appContainer.classList.remove('hidden');
+        
+        // Dynamic access permissions setup
+        updatePermissionsUI();
+        
         lucide.createIcons();
         renderDashboard();
     } else {
         authView.classList.remove('hidden');
         appContainer.classList.add('hidden');
         lucide.createIcons();
+    }
+}
+
+// Update admin/viewer components visibility in UI
+function updatePermissionsUI() {
+    const addBtn = document.getElementById('addEngineerBtn');
+    const actionHeader = document.getElementById('actionsHeader');
+    
+    if (state.userRole === 'admin') {
+        if (addBtn) addBtn.classList.remove('hidden');
+        if (actionHeader) actionHeader.classList.remove('hidden');
+    } else {
+        if (addBtn) addBtn.classList.add('hidden');
+        if (actionHeader) actionHeader.classList.add('hidden');
     }
 }
 
@@ -66,14 +89,26 @@ function handleLogin(event) {
     const passwordInput = document.getElementById('password').value;
     const errorMsg = document.getElementById('loginError');
     
-    if (userIdInput === CONFIG.AUTH_USER && passwordInput === CONFIG.AUTH_PASS) {
+    // Accept user code/id check
+    const isUserValid = (userIdInput === CONFIG.AUTH_USER || userIdInput === '1091514' || userIdInput === 'Minhaj');
+    
+    if (isUserValid && passwordInput === CONFIG.AUTH_PASS_ADMIN) {
+        // Admin role login (Md. Minhajul Haque)
         sessionStorage.setItem('bpdb_auth', 'true');
+        sessionStorage.setItem('bpdb_user_role', 'admin');
         errorMsg.classList.add('hidden');
         
-        // Reset login form fields
         document.getElementById('userId').value = '';
         document.getElementById('password').value = '';
+        checkAuthSession();
+    } else if (userIdInput === CONFIG.AUTH_USER && passwordInput === CONFIG.AUTH_PASS_VIEWER) {
+        // Viewer role login
+        sessionStorage.setItem('bpdb_auth', 'true');
+        sessionStorage.setItem('bpdb_user_role', 'viewer');
+        errorMsg.classList.add('hidden');
         
+        document.getElementById('userId').value = '';
+        document.getElementById('password').value = '';
         checkAuthSession();
     } else {
         errorMsg.classList.remove('hidden');
@@ -83,6 +118,7 @@ function handleLogin(event) {
 // Handle logouts
 function handleLogout() {
     sessionStorage.removeItem('bpdb_auth');
+    sessionStorage.removeItem('bpdb_user_role');
     checkAuthSession();
 }
 
@@ -691,9 +727,10 @@ function renderDatabaseTable() {
     document.getElementById('paginationTotal').innerText = totalRecords.toLocaleString();
     
     if (totalRecords === 0) {
+        const colCount = state.userRole === 'admin' ? 10 : 9;
         tbody.innerHTML = `
             <tr>
-                <td colspan="10" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                <td colspan="${colCount}" style="text-align: center; padding: 48px; color: var(--text-muted);">
                     <i data-lucide="info" style="width: 24px; height: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
                     <p>No matching engineer records found.</p>
                 </td>
@@ -781,6 +818,22 @@ function renderDatabaseTable() {
             engineerStatusHtml = `<td><span class="status-pill status-promotee">Promoted from SAE</span></td>`;
         }
         
+        let actionsCellHtml = '';
+        if (state.userRole === 'admin') {
+            actionsCellHtml = `
+                <td class="actions-col">
+                    <div class="action-buttons-wrap">
+                        <button class="btn-table-action btn-edit" title="Edit Engineer" onclick="openEditEngineerModal('${eng.code}')">
+                            <i data-lucide="edit-3"></i>
+                        </button>
+                        <button class="btn-table-action btn-delete" title="Delete Engineer" onclick="deleteEngineer('${eng.code}')">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+        }
+        
         tr.innerHTML = `
             <td><strong>${eng.code}</strong></td>
             <td>
@@ -797,16 +850,7 @@ function renderDatabaseTable() {
             <td><span class="text-secondary">${dobFormatted}</span></td>
             <td><span class="text-secondary">${joiningFormatted}</span></td>
             <td><span class="text-secondary">${prlFormatted}</span></td>
-            <td class="actions-col">
-                <div class="action-buttons-wrap">
-                    <button class="btn-table-action btn-edit" title="Edit Engineer" onclick="openEditEngineerModal('${eng.code}')">
-                        <i data-lucide="edit-3"></i>
-                    </button>
-                    <button class="btn-table-action btn-delete" title="Delete Engineer" onclick="deleteEngineer('${eng.code}')">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            </td>
+            ${actionsCellHtml}
         `;
         tbody.appendChild(tr);
     });
@@ -888,6 +932,10 @@ function renderPaginationControls(totalRecords) {
 
 // Open Modal for adding a new record
 function openAddEngineerModal() {
+    if (state.userRole !== 'admin') {
+        alert('Unauthorized: Only MD. Minhajul Haque has edit privileges.');
+        return;
+    }
     document.getElementById('modalTitle').innerText = 'Add New Engineer';
     document.getElementById('engineerForm').reset();
     document.getElementById('editOriginalCode').value = '';
@@ -899,6 +947,10 @@ function openAddEngineerModal() {
 
 // Open Modal for editing a record
 function openEditEngineerModal(code) {
+    if (state.userRole !== 'admin') {
+        alert('Unauthorized: Only MD. Minhajul Haque has edit privileges.');
+        return;
+    }
     const eng = state.engineers.find(e => e.code === code);
     if (!eng) return;
     
@@ -927,6 +979,11 @@ function closeEngineerModal() {
 // Save adding or editing submissions
 function saveEngineer(event) {
     event.preventDefault();
+    
+    if (state.userRole !== 'admin') {
+        alert('Unauthorized: Only MD. Minhajul Haque has edit privileges.');
+        return;
+    }
     
     const originalCode = document.getElementById('editOriginalCode').value;
     const code = document.getElementById('engCode').value.trim();
@@ -981,6 +1038,10 @@ function saveEngineer(event) {
 
 // Delete Record Action
 function deleteEngineer(code) {
+    if (state.userRole !== 'admin') {
+        alert('Unauthorized: Only MD. Minhajul Haque has edit privileges.');
+        return;
+    }
     const eng = state.engineers.find(e => e.code === code);
     if (!eng) return;
     
