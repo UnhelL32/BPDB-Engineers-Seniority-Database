@@ -4,7 +4,7 @@
 
 // --- Application Configuration & State ---
 const CONFIG = {
-    CURRENT_DATE: new Date('2026-07-03'), // Fixed current date as per system metadata
+    CURRENT_DATE: new Date(), // Live current system date and time
     ITEMS_PER_PAGE: 50,
     AUTH_USER: 'BPDB',
     AUTH_PASS_VIEWER: 'Engineers',
@@ -30,8 +30,9 @@ let state = {
 
 // --- Page & Initialization Lifecycle ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Date Display
-    document.getElementById('currentDateDisplay').innerText = formatFriendlyDate(CONFIG.CURRENT_DATE);
+    // 1. Initialize Live Date & Time Clock
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
     
     // 2. Load and Prepare Seniority Data
     loadDatabase();
@@ -1055,6 +1056,34 @@ function deleteEngineer(code) {
 }
 
 // --- Date Formatter Utilities ---
+
+// Ticks every second to display live system date and time
+function updateLiveClock() {
+    const now = new Date();
+    CONFIG.CURRENT_DATE = now;
+    
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedHours = String(hours).padStart(2, '0');
+    
+    const timeStr = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+    const dateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+    
+    const displayEl = document.getElementById('currentDateDisplay');
+    if (displayEl) {
+        displayEl.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock" style="margin-right: 6px; display: inline-block; vertical-align: middle;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span style="vertical-align: middle;">${dateStr} &nbsp;|&nbsp; ${timeStr}</span>
+        `;
+    }
+}
 
 function formatFriendlyDate(dateObj) {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

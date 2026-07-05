@@ -4,6 +4,20 @@ A modern, elegant, and user-friendly web-based database application designed to 
 
 Developed and branded by **Md. Minhajul Haque, Sub Divisional Engineer, BPDB-17**.
 
+---
+
+## 🔑 Secure Access Gateway
+For security and privacy, the application begins with an authentication gate supporting two role-based access levels:
+* **Viewer Access (Read-Only View):**
+  * **User ID:** `BPDB`
+  * **Password:** `Engineers`
+  * *Capabilities:* View dashboard, search, filter, and sort database records. Editing, adding, and deleting controls are hidden.
+* **Admin Access (Full Edit Rights - Md. Minhajul Haque):**
+  * **User ID:** `BPDB` (or `Minhaj` or `1091514`)
+  * **Password:** `1091514m@H`
+  * *Capabilities:* Full write access to add, edit details, adjust service/employment statuses, and delete entries. Action columns, buttons, and form triggers are fully enabled. Function calls are validated to block unauthorized modifications.
+
+---
 
 ## 📊 Core Features
 
